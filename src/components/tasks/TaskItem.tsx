@@ -1,16 +1,17 @@
 import React from 'react';
 import { Check, Trash2 } from 'lucide-react';
-import { CattleTask, TASK_CATEGORIES } from '@/types/cattle';
+import { CattleTask, TASK_CATEGORIES, Animal } from '@/types/cattle';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 interface TaskItemProps {
   task: CattleTask;
+  animal?: Animal;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-export function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
+export function TaskItem({ task, animal, onToggle, onDelete }: TaskItemProps) {
   const category = TASK_CATEGORIES[task.category];
 
   return (
@@ -35,11 +36,16 @@ export function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
 
       {/* Task Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
           <span className="text-lg">{category.icon}</span>
           <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full", category.color)}>
             {category.label}
           </span>
+          {animal && (
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+              {animal.sex === 'male' ? '🐂' : '🐄'} {animal.name}
+            </span>
+          )}
         </div>
         <p className={cn(
           "font-semibold text-foreground truncate",

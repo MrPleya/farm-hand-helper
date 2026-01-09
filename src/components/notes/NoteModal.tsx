@@ -1,39 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { CattleNote } from '@/types/cattle';
+import { CattleNote, Animal } from '@/types/cattle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { AnimalSelect } from '@/components/common/AnimalSelect';
 
 interface NoteModalProps {
   isOpen: boolean;
   note: CattleNote | null;
   onClose: () => void;
-  onSave: (title: string, content: string, id?: string) => void;
+  onSave: (title: string, content: string, animalId?: string, id?: string) => void;
+  animals: Animal[];
+  preselectedAnimalId?: string;
 }
 
-export function NoteModal({ isOpen, note, onClose, onSave }: NoteModalProps) {
+export function NoteModal({ isOpen, note, onClose, onSave, animals, preselectedAnimalId }: NoteModalProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [animalId, setAnimalId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (note) {
       setTitle(note.title);
       setContent(note.content);
+      setAnimalId(note.animalId);
     } else {
       setTitle('');
       setContent('');
+      setAnimalId(preselectedAnimalId);
     }
-  }, [note, isOpen]);
+  }, [note, isOpen, preselectedAnimalId]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim()) {
-      onSave(title.trim(), content.trim(), note?.id);
+      onSave(title.trim().slice(0, 100), content.trim().slice(0, 1000), animalId, note?.id);
       setTitle('');
       setContent('');
+      setAnimalId(undefined);
       onClose();
     }
   };
@@ -61,6 +68,7 @@ export function NoteModal({ isOpen, note, onClose, onSave }: NoteModalProps) {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Cow #42 Treatment"
               className="h-14 text-lg"
+              maxLength={100}
               autoFocus
             />
           </div>
@@ -74,7 +82,15 @@ export function NoteModal({ isOpen, note, onClose, onSave }: NoteModalProps) {
               onChange={(e) => setContent(e.target.value)}
               placeholder="Write your observations, treatments, or reminders..."
               className="min-h-[150px] text-base resize-none"
+              maxLength={1000}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-muted-foreground mb-3">
+              Link to Animal (optional)
+            </label>
+            <AnimalSelect animals={animals} selectedId={animalId} onSelect={setAnimalId} />
           </div>
 
           <Button type="submit" size="xl" className="w-full">

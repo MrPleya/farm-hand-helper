@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, CheckSquare, FileText } from 'lucide-react';
+import { Home, CheckSquare, FileText, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MobileLayoutProps {
@@ -10,6 +10,7 @@ interface MobileLayoutProps {
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home' },
+  { path: '/animals', icon: Users, label: 'Herd' },
   { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
   { path: '/notes', icon: FileText, label: 'Notes' },
 ];
@@ -44,7 +45,7 @@ export function MobileLayout({ children, title }: MobileLayoutProps) {
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={cn(
-                  "flex flex-col items-center justify-center py-2 px-6 rounded-lg transition-all duration-200 touch-target",
+                  "flex flex-col items-center justify-center py-2 px-4 rounded-lg transition-all duration-200 touch-target",
                   isActive
                     ? "text-primary bg-primary/10"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
