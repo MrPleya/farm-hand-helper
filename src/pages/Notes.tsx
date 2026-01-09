@@ -1,38 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { NoteItem } from '@/components/notes/NoteItem';
 import { NoteModal } from '@/components/notes/NoteModal';
 import { Button } from '@/components/ui/button';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { CattleNote } from '@/types/cattle';
+import { CattleNote, Animal } from '@/types/cattle';
 
 const Notes = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [notes, setNotes] = useLocalStorage<CattleNote[]>('cattle-notes', []);
+  const [animals] = useLocalStorage<Animal[]>('cattle-animals', []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<CattleNote | null>(null);
+  const [preselectedAnimalId, setPreselectedAnimalId] = useState<string | undefined>();
 
-  const saveNote = (title: string, content: string, id?: string) => {
+  useEffect(() => {
+    const animalId = searchParams.get('animalId');
+    if (animalId) {
+      setPreselectedAnimalId(animalId);
+      setIsModalOpen(true);
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
+
+  const saveNote = (title: string, content: string, animalId?: string, id?: string) => {
     if (id) {
-      // Update existing note
       setNotes(prev =>
         prev.map(note =>
           note.id === id
-            ? { ...note, title, content, updatedAt: new Date().toISOString() }
+            ? { ...note, title, content, animalId, updatedAt: new Date().toISOString() }
             : note
         )
       );
     } else {
-      // Create new note
       const newNote: CattleNote = {
         id: crypto.randomUUID(),
         title,
         content,
+        animalId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
       setNotes(prev => [newNote, ...prev]);
     }
+    setPreselectedAnimalId(undefined);
   };
 
   const deleteNote = (id: string) => {
@@ -47,7 +60,10 @@ const Notes = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingNote(null);
+    setPreselectedAnimalId(undefined);
   };
+
+  const getAnimal = (animalId?: string) => animals.find(a => a.id === animalId);
 
   return (
     <MobileLayout title="Cattle Notes">
@@ -65,6 +81,7 @@ const Notes = () => {
             <NoteItem
               key={note.id}
               note={note}
+              animal={getAnimal(note.animalId)}
               onEdit={openEditModal}
               onDelete={deleteNote}
             />
@@ -89,6 +106,8 @@ const Notes = () => {
         note={editingNote}
         onClose={closeModal}
         onSave={saveNote}
+        animals={animals}
+        preselectedAnimalId={preselectedAnimalId}
       />
     </MobileLayout>
   );

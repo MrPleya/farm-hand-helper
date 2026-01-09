@@ -1,35 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { TaskCategory, TASK_CATEGORIES } from '@/types/cattle';
+import { TaskCategory, TASK_CATEGORIES, Animal } from '@/types/cattle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { AnimalSelect } from '@/components/common/AnimalSelect';
 import { cn } from '@/lib/utils';
 
 interface AddTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (title: string, category: TaskCategory) => void;
+  onAdd: (title: string, category: TaskCategory, animalId?: string) => void;
+  animals: Animal[];
+  preselectedAnimalId?: string;
 }
 
-export function AddTaskModal({ isOpen, onClose, onAdd }: AddTaskModalProps) {
+export function AddTaskModal({ isOpen, onClose, onAdd, animals, preselectedAnimalId }: AddTaskModalProps) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<TaskCategory>('feeding');
+  const [animalId, setAnimalId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (isOpen && preselectedAnimalId) {
+      setAnimalId(preselectedAnimalId);
+    }
+  }, [isOpen, preselectedAnimalId]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim()) {
-      onAdd(title.trim(), category);
+      onAdd(title.trim().slice(0, 200), category, animalId);
       setTitle('');
       setCategory('feeding');
+      setAnimalId(undefined);
       onClose();
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 animate-fade-in">
-      <div className="w-full max-w-lg bg-card rounded-t-3xl p-6 animate-slide-up safe-area-bottom">
+      <div className="w-full max-w-lg bg-card rounded-t-3xl p-6 animate-slide-up safe-area-bottom max-h-[90vh] overflow-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-foreground">Add New Task</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -48,6 +59,7 @@ export function AddTaskModal({ isOpen, onClose, onAdd }: AddTaskModalProps) {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Feed the herd in pasture 2"
               className="h-14 text-lg"
+              maxLength={200}
               autoFocus
             />
           </div>
@@ -76,6 +88,13 @@ export function AddTaskModal({ isOpen, onClose, onAdd }: AddTaskModalProps) {
                 )
               )}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-muted-foreground mb-3">
+              Link to Animal (optional)
+            </label>
+            <AnimalSelect animals={animals} selectedId={animalId} onSelect={setAnimalId} />
           </div>
 
           <Button type="submit" size="xl" className="w-full">

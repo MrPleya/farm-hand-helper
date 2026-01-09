@@ -1,26 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { TaskItem } from '@/components/tasks/TaskItem';
 import { AddTaskModal } from '@/components/tasks/AddTaskModal';
 import { Button } from '@/components/ui/button';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { CattleTask, TaskCategory } from '@/types/cattle';
+import { CattleTask, TaskCategory, Animal } from '@/types/cattle';
 
 const Tasks = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tasks, setTasks] = useLocalStorage<CattleTask[]>('cattle-tasks', []);
+  const [animals] = useLocalStorage<Animal[]>('cattle-animals', []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [preselectedAnimalId, setPreselectedAnimalId] = useState<string | undefined>();
 
-  const addTask = (title: string, category: TaskCategory) => {
+  useEffect(() => {
+    const animalId = searchParams.get('animalId');
+    if (animalId) {
+      setPreselectedAnimalId(animalId);
+      setIsModalOpen(true);
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
+
+  const addTask = (title: string, category: TaskCategory, animalId?: string) => {
     const newTask: CattleTask = {
       id: crypto.randomUUID(),
       title,
       category,
       completed: false,
       createdAt: new Date().toISOString(),
+      animalId,
     };
     setTasks(prev => [newTask, ...prev]);
+    setPreselectedAnimalId(undefined);
   };
 
   const toggleTask = (id: string) => {
@@ -40,6 +55,8 @@ const Tasks = () => {
   const deleteTask = (id: string) => {
     setTasks(prev => prev.filter(task => task.id !== id));
   };
+
+  const getAnimal = (animalId?: string) => animals.find(a => a.id === animalId);
 
   const filteredTasks = tasks.filter(task => {
     if (filter === 'pending') return !task.completed;
@@ -98,6 +115,7 @@ const Tasks = () => {
             <TaskItem
               key={task.id}
               task={task}
+              animal={getAnimal(task.animalId)}
               onToggle={toggleTask}
               onDelete={deleteTask}
             />
@@ -119,8 +137,13 @@ const Tasks = () => {
       {/* Add Modal */}
       <AddTaskModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setPreselectedAnimalId(undefined);
+        }}
         onAdd={addTask}
+        animals={animals}
+        preselectedAnimalId={preselectedAnimalId}
       />
     </MobileLayout>
   );

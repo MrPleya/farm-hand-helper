@@ -1,15 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckSquare, FileText, TrendingUp } from 'lucide-react';
+import { CheckSquare, FileText, TrendingUp, Users } from 'lucide-react';
 import { MobileLayout } from '@/components/layout/MobileLayout';
 import { Button } from '@/components/ui/button';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { CattleTask, CattleNote } from '@/types/cattle';
+import { CattleTask, CattleNote, Animal } from '@/types/cattle';
 
 const Index = () => {
   const navigate = useNavigate();
   const [tasks] = useLocalStorage<CattleTask[]>('cattle-tasks', []);
   const [notes] = useLocalStorage<CattleNote[]>('cattle-notes', []);
+  const [animals] = useLocalStorage<Animal[]>('cattle-animals', []);
 
   const completedToday = tasks.filter(t => {
     if (!t.completedAt) return false;
@@ -34,21 +35,29 @@ const Index = () => {
 
       {/* Stats Cards */}
       <div className="px-4 -mt-6 mb-6">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-card rounded-xl p-4 shadow-md border border-border">
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="w-5 h-5 text-primary" />
+              <span className="text-xs font-semibold text-muted-foreground">Herd</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">{animals.length}</p>
+          </div>
+          
           <div className="bg-card rounded-xl p-4 shadow-md border border-border">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-5 h-5 text-success" />
-              <span className="text-sm font-semibold text-muted-foreground">Done Today</span>
+              <span className="text-xs font-semibold text-muted-foreground">Done</span>
             </div>
-            <p className="text-3xl font-bold text-foreground">{completedToday}</p>
+            <p className="text-2xl font-bold text-foreground">{completedToday}</p>
           </div>
           
           <div className="bg-card rounded-xl p-4 shadow-md border border-border">
             <div className="flex items-center gap-2 mb-2">
               <CheckSquare className="w-5 h-5 text-accent" />
-              <span className="text-sm font-semibold text-muted-foreground">Pending</span>
+              <span className="text-xs font-semibold text-muted-foreground">Pending</span>
             </div>
-            <p className="text-3xl font-bold text-foreground">{pendingTasks}</p>
+            <p className="text-2xl font-bold text-foreground">{pendingTasks}</p>
           </div>
         </div>
       </div>
@@ -61,10 +70,27 @@ const Index = () => {
           variant="nav"
           size="touch"
           className="w-full justify-start gap-4"
-          onClick={() => navigate('/tasks')}
+          onClick={() => navigate('/animals')}
         >
           <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-            <CheckSquare className="w-6 h-6 text-primary" />
+            <Users className="w-6 h-6 text-primary" />
+          </div>
+          <div className="text-left">
+            <p className="font-bold text-foreground">My Herd</p>
+            <p className="text-sm text-muted-foreground">
+              {animals.length} animals registered
+            </p>
+          </div>
+        </Button>
+
+        <Button
+          variant="nav"
+          size="touch"
+          className="w-full justify-start gap-4"
+          onClick={() => navigate('/tasks')}
+        >
+          <div className="w-12 h-12 rounded-xl bg-success/10 flex items-center justify-center">
+            <CheckSquare className="w-6 h-6 text-success" />
           </div>
           <div className="text-left">
             <p className="font-bold text-foreground">Daily Tasks</p>
@@ -92,20 +118,22 @@ const Index = () => {
         </Button>
       </div>
 
-      {/* Today's Summary */}
-      {tasks.length > 0 && (
+      {/* Recent Animals */}
+      {animals.length > 0 && (
         <div className="px-4 mt-8">
-          <h2 className="text-lg font-bold text-foreground mb-3">Recent Tasks</h2>
-          <div className="space-y-2">
-            {tasks.slice(0, 3).map((task) => (
+          <h2 className="text-lg font-bold text-foreground mb-3">Recent Animals</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {animals.slice(0, 5).map((animal) => (
               <div
-                key={task.id}
-                className="flex items-center gap-3 p-3 bg-muted rounded-lg"
+                key={animal.id}
+                className="flex-shrink-0 w-24 bg-card rounded-xl p-3 border border-border text-center cursor-pointer hover:border-primary/50 transition-all"
+                onClick={() => navigate('/animals')}
               >
-                <span className={`w-3 h-3 rounded-full ${task.completed ? 'bg-success' : 'bg-warning'}`} />
-                <span className="text-sm font-medium text-foreground truncate">
-                  {task.title}
+                <span className="text-3xl block mb-1">
+                  {animal.sex === 'male' ? '🐂' : '🐄'}
                 </span>
+                <p className="text-xs font-semibold text-foreground truncate">{animal.name}</p>
+                <p className="text-xs text-muted-foreground">{animal.age}y</p>
               </div>
             ))}
           </div>

@@ -1,4 +1,16 @@
 export type TaskCategory = 'feeding' | 'watering' | 'health' | 'breeding' | 'cleaning';
+export type AnimalSex = 'male' | 'female';
+
+export interface Animal {
+  id: string;
+  name: string;
+  tagId?: string;
+  age: number;
+  sex: AnimalSex;
+  healthNotes: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface CattleTask {
   id: string;
@@ -7,6 +19,7 @@ export interface CattleTask {
   completed: boolean;
   createdAt: string;
   completedAt?: string;
+  animalId?: string;
 }
 
 export interface CattleNote {
@@ -15,6 +28,7 @@ export interface CattleNote {
   content: string;
   createdAt: string;
   updatedAt: string;
+  animalId?: string;
 }
 
 export const TASK_CATEGORIES: Record<TaskCategory, { label: string; icon: string; color: string }> = {
