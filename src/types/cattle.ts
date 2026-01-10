@@ -1,12 +1,28 @@
 export type TaskCategory = 'feeding' | 'watering' | 'health' | 'breeding' | 'cleaning';
 export type AnimalSex = 'male' | 'female';
 
+export interface BirthRecord {
+  id: string;
+  calfId: string;
+  calfName: string;
+  birthDate: string;
+  birthWeight?: number;
+  notes?: string;
+}
+
 export interface Animal {
   id: string;
   name: string;
   tagId?: string;
   age: number;
   sex: AnimalSex;
+  breed?: string;
+  birthWeight?: number;
+  currentWeight?: number;
+  dateOfBirth?: string;
+  motherId?: string;
+  fatherId?: string;
+  birthRecords?: BirthRecord[];
   healthNotes: string;
   createdAt: string;
   updatedAt: string;

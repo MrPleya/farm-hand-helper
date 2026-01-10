@@ -9,15 +9,22 @@ import { cn } from '@/lib/utils';
 interface AnimalModalProps {
   isOpen: boolean;
   animal: Animal | null;
+  animals: Animal[];
   onClose: () => void;
-  onSave: (data: Omit<Animal, 'id' | 'createdAt' | 'updatedAt'>, id?: string) => void;
+  onSave: (data: Omit<Animal, 'id' | 'createdAt' | 'updatedAt' | 'birthRecords'>, id?: string) => void;
 }
 
-export function AnimalModal({ isOpen, animal, onClose, onSave }: AnimalModalProps) {
+export function AnimalModal({ isOpen, animal, animals, onClose, onSave }: AnimalModalProps) {
   const [name, setName] = useState('');
   const [tagId, setTagId] = useState('');
   const [age, setAge] = useState('');
   const [sex, setSex] = useState<AnimalSex>('female');
+  const [breed, setBreed] = useState('');
+  const [birthWeight, setBirthWeight] = useState('');
+  const [currentWeight, setCurrentWeight] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [motherId, setMotherId] = useState('');
+  const [fatherId, setFatherId] = useState('');
   const [healthNotes, setHealthNotes] = useState('');
 
   useEffect(() => {
@@ -26,17 +33,32 @@ export function AnimalModal({ isOpen, animal, onClose, onSave }: AnimalModalProp
       setTagId(animal.tagId || '');
       setAge(animal.age.toString());
       setSex(animal.sex);
+      setBreed(animal.breed || '');
+      setBirthWeight(animal.birthWeight?.toString() || '');
+      setCurrentWeight(animal.currentWeight?.toString() || '');
+      setDateOfBirth(animal.dateOfBirth || '');
+      setMotherId(animal.motherId || '');
+      setFatherId(animal.fatherId || '');
       setHealthNotes(animal.healthNotes);
     } else {
       setName('');
       setTagId('');
       setAge('');
       setSex('female');
+      setBreed('');
+      setBirthWeight('');
+      setCurrentWeight('');
+      setDateOfBirth('');
+      setMotherId('');
+      setFatherId('');
       setHealthNotes('');
     }
   }, [animal, isOpen]);
 
   if (!isOpen) return null;
+
+  const mothers = animals.filter(a => a.sex === 'female' && a.id !== animal?.id);
+  const fathers = animals.filter(a => a.sex === 'male' && a.id !== animal?.id);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +69,12 @@ export function AnimalModal({ isOpen, animal, onClose, onSave }: AnimalModalProp
           tagId: tagId.trim().slice(0, 50) || undefined,
           age: Math.max(0, Math.min(30, parseInt(age) || 0)),
           sex,
+          breed: breed.trim().slice(0, 100) || undefined,
+          birthWeight: birthWeight ? parseFloat(birthWeight) : undefined,
+          currentWeight: currentWeight ? parseFloat(currentWeight) : undefined,
+          dateOfBirth: dateOfBirth || undefined,
+          motherId: motherId || undefined,
+          fatherId: fatherId || undefined,
           healthNotes: healthNotes.trim().slice(0, 500),
         },
         animal?.id
@@ -83,18 +111,33 @@ export function AnimalModal({ isOpen, animal, onClose, onSave }: AnimalModalProp
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-muted-foreground mb-2">
-              Tag ID (optional)
-            </label>
-            <Input
-              type="text"
-              value={tagId}
-              onChange={(e) => setTagId(e.target.value)}
-              placeholder="e.g., #42"
-              className="h-12"
-              maxLength={50}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-muted-foreground mb-2">
+                Tag ID
+              </label>
+              <Input
+                type="text"
+                value={tagId}
+                onChange={(e) => setTagId(e.target.value)}
+                placeholder="e.g., #42"
+                className="h-12"
+                maxLength={50}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-muted-foreground mb-2">
+                Breed
+              </label>
+              <Input
+                type="text"
+                value={breed}
+                onChange={(e) => setBreed(e.target.value)}
+                placeholder="e.g., Angus"
+                className="h-12"
+                maxLength={100}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -128,7 +171,7 @@ export function AnimalModal({ isOpen, animal, onClose, onSave }: AnimalModalProp
                       : "border-border text-muted-foreground"
                   )}
                 >
-                  🐄 Female
+                  🐄 F
                 </button>
                 <button
                   type="button"
@@ -140,8 +183,94 @@ export function AnimalModal({ isOpen, animal, onClose, onSave }: AnimalModalProp
                       : "border-border text-muted-foreground"
                   )}
                 >
-                  🐂 Male
+                  🐂 M
                 </button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-muted-foreground mb-2">
+              Date of Birth
+            </label>
+            <Input
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              className="h-12"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-muted-foreground mb-2">
+                Birth Weight (kg)
+              </label>
+              <Input
+                type="number"
+                value={birthWeight}
+                onChange={(e) => setBirthWeight(e.target.value)}
+                placeholder="e.g., 35"
+                className="h-12"
+                min={0}
+                max={100}
+                step={0.1}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-muted-foreground mb-2">
+                Current Weight (kg)
+              </label>
+              <Input
+                type="number"
+                value={currentWeight}
+                onChange={(e) => setCurrentWeight(e.target.value)}
+                placeholder="e.g., 450"
+                className="h-12"
+                min={0}
+                max={2000}
+                step={0.1}
+              />
+            </div>
+          </div>
+
+          {/* Parents Section */}
+          <div className="pt-2 border-t border-border">
+            <p className="text-sm font-semibold text-muted-foreground mb-3">Parents (for family tree)</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-2">
+                  Mother
+                </label>
+                <select
+                  value={motherId}
+                  onChange={(e) => setMotherId(e.target.value)}
+                  className="w-full h-12 px-3 rounded-lg border border-input bg-background text-foreground text-sm"
+                >
+                  <option value="">Unknown</option>
+                  {mothers.map(m => (
+                    <option key={m.id} value={m.id}>
+                      {m.name} {m.tagId ? `(#${m.tagId})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-2">
+                  Father
+                </label>
+                <select
+                  value={fatherId}
+                  onChange={(e) => setFatherId(e.target.value)}
+                  className="w-full h-12 px-3 rounded-lg border border-input bg-background text-foreground text-sm"
+                >
+                  <option value="">Unknown</option>
+                  {fathers.map(f => (
+                    <option key={f.id} value={f.id}>
+                      {f.name} {f.tagId ? `(#${f.tagId})` : ''}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
@@ -154,7 +283,7 @@ export function AnimalModal({ isOpen, animal, onClose, onSave }: AnimalModalProp
               value={healthNotes}
               onChange={(e) => setHealthNotes(e.target.value)}
               placeholder="Any health conditions, vaccinations, treatments..."
-              className="min-h-[100px] resize-none"
+              className="min-h-[80px] resize-none"
               maxLength={500}
             />
           </div>

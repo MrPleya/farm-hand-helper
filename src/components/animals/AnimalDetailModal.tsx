@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, CheckSquare, FileText, Plus } from 'lucide-react';
+import { X, CheckSquare, FileText, Plus, GitBranch, Baby, Scale, Calendar } from 'lucide-react';
 import { Animal, CattleTask, CattleNote, TASK_CATEGORIES } from '@/types/cattle';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
@@ -8,34 +8,43 @@ import { cn } from '@/lib/utils';
 interface AnimalDetailModalProps {
   isOpen: boolean;
   animal: Animal | null;
+  animals: Animal[];
   tasks: CattleTask[];
   notes: CattleNote[];
   onClose: () => void;
   onAddTask: (animalId: string) => void;
   onAddNote: (animalId: string) => void;
   onToggleTask: (taskId: string) => void;
+  onViewFamilyTree: (animal: Animal) => void;
+  onViewBirthRecords: (animal: Animal) => void;
 }
 
 export function AnimalDetailModal({
   isOpen,
   animal,
+  animals,
   tasks,
   notes,
   onClose,
   onAddTask,
   onAddNote,
   onToggleTask,
+  onViewFamilyTree,
+  onViewBirthRecords,
 }: AnimalDetailModalProps) {
   if (!isOpen || !animal) return null;
 
   const animalTasks = tasks.filter((t) => t.animalId === animal.id);
   const animalNotes = notes.filter((n) => n.animalId === animal.id);
+  
+  const mother = animals.find(a => a.id === animal.motherId);
+  const father = animals.find(a => a.id === animal.fatherId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 animate-fade-in">
       <div className="w-full max-w-lg bg-card rounded-t-3xl animate-slide-up safe-area-bottom max-h-[90vh] overflow-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-primary text-primary-foreground px-6 py-4 flex items-center justify-between rounded-t-3xl">
+        <div className="sticky top-0 bg-primary text-primary-foreground px-6 py-4 flex items-center justify-between rounded-t-3xl z-10">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{animal.sex === 'male' ? '🐂' : '🐄'}</span>
             <div>
@@ -49,16 +58,98 @@ export function AnimalDetailModal({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Info */}
-          <div className="flex gap-4">
-            <div className="flex-1 bg-muted rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-foreground">{animal.age}</p>
+          {/* Basic Info */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-muted rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-foreground">{animal.age}</p>
               <p className="text-xs text-muted-foreground">Years old</p>
             </div>
-            <div className="flex-1 bg-muted rounded-xl p-3 text-center">
-              <p className="text-2xl font-bold text-foreground">{animal.sex === 'male' ? 'Male' : 'Female'}</p>
-              <p className="text-xs text-muted-foreground">Sex</p>
+            <div className="bg-muted rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-foreground">{animal.sex === 'male' ? '♂' : '♀'}</p>
+              <p className="text-xs text-muted-foreground">{animal.sex === 'male' ? 'Male' : 'Female'}</p>
             </div>
+            {animal.breed && (
+              <div className="bg-muted rounded-xl p-3 text-center">
+                <p className="text-sm font-bold text-foreground truncate">{animal.breed}</p>
+                <p className="text-xs text-muted-foreground">Breed</p>
+              </div>
+            )}
+          </div>
+
+          {/* Weight & DOB Info */}
+          {(animal.birthWeight || animal.currentWeight || animal.dateOfBirth) && (
+            <div className="grid grid-cols-2 gap-3">
+              {animal.dateOfBirth && (
+                <div className="flex items-center gap-2 bg-muted rounded-lg p-3">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Born</p>
+                    <p className="text-sm font-semibold">{format(new Date(animal.dateOfBirth), 'MMM d, yyyy')}</p>
+                  </div>
+                </div>
+              )}
+              {animal.birthWeight && (
+                <div className="flex items-center gap-2 bg-muted rounded-lg p-3">
+                  <Scale className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Birth Weight</p>
+                    <p className="text-sm font-semibold">{animal.birthWeight} kg</p>
+                  </div>
+                </div>
+              )}
+              {animal.currentWeight && (
+                <div className="flex items-center gap-2 bg-muted rounded-lg p-3">
+                  <Scale className="w-4 h-4 text-primary" />
+                  <div>
+                    <p className="text-xs text-muted-foreground">Current Weight</p>
+                    <p className="text-sm font-semibold">{animal.currentWeight} kg</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Parents Quick View */}
+          {(mother || father) && (
+            <div className="bg-muted/50 rounded-xl p-3">
+              <p className="text-xs font-semibold text-muted-foreground mb-2">Parents</p>
+              <div className="flex gap-4">
+                {mother && (
+                  <div className="flex items-center gap-2">
+                    <span>🐄</span>
+                    <span className="text-sm">{mother.name}</span>
+                  </div>
+                )}
+                {father && (
+                  <div className="flex items-center gap-2">
+                    <span>🐂</span>
+                    <span className="text-sm">{father.name}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button 
+              variant="outline" 
+              className="h-12"
+              onClick={() => onViewFamilyTree(animal)}
+            >
+              <GitBranch className="w-4 h-4 mr-2" />
+              Family Tree
+            </Button>
+            {animal.sex === 'female' && (
+              <Button 
+                variant="outline" 
+                className="h-12"
+                onClick={() => onViewBirthRecords(animal)}
+              >
+                <Baby className="w-4 h-4 mr-2" />
+                Birth Records
+              </Button>
+            )}
           </div>
 
           {/* Health Notes */}
