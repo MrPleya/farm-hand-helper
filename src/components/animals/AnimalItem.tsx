@@ -25,13 +25,21 @@ export function AnimalItem({ animal, taskCount, noteCount, onEdit, onDelete, onV
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="font-bold text-foreground truncate">{animal.name}</h3>
-            {animal.tagId && (
-              <p className="text-xs text-muted-foreground">Tag: {animal.tagId}</p>
-            )}
-            <div className="flex items-center gap-3 mt-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              {animal.tagId && (
+                <span className="text-xs text-muted-foreground">#{animal.tagId}</span>
+              )}
+              {animal.breed && (
+                <span className="text-xs bg-muted px-1.5 py-0.5 rounded">{animal.breed}</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="text-xs text-muted-foreground">
-                {animal.age} {animal.age === 1 ? 'year' : 'years'} • {animal.sex === 'male' ? 'Male' : 'Female'}
+                {animal.age}y • {animal.sex === 'male' ? '♂' : '♀'}
               </span>
+              {animal.currentWeight && (
+                <span className="text-xs text-muted-foreground">• {animal.currentWeight}kg</span>
+              )}
             </div>
           </div>
         </div>

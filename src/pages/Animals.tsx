@@ -5,9 +5,11 @@ import { MobileLayout } from '@/components/layout/MobileLayout';
 import { AnimalItem } from '@/components/animals/AnimalItem';
 import { AnimalModal } from '@/components/animals/AnimalModal';
 import { AnimalDetailModal } from '@/components/animals/AnimalDetailModal';
+import { FamilyTreeModal } from '@/components/animals/FamilyTreeModal';
+import { BirthRecordsModal } from '@/components/animals/BirthRecordsModal';
 import { Button } from '@/components/ui/button';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { Animal, CattleTask, CattleNote } from '@/types/cattle';
+import { Animal, CattleTask, CattleNote, BirthRecord } from '@/types/cattle';
 
 const Animals = () => {
   const navigate = useNavigate();
@@ -17,9 +19,11 @@ const Animals = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState<Animal | null>(null);
   const [viewingAnimal, setViewingAnimal] = useState<Animal | null>(null);
+  const [familyTreeAnimal, setFamilyTreeAnimal] = useState<Animal | null>(null);
+  const [birthRecordsAnimal, setBirthRecordsAnimal] = useState<Animal | null>(null);
 
   const saveAnimal = (
-    data: Omit<Animal, 'id' | 'createdAt' | 'updatedAt'>,
+    data: Omit<Animal, 'id' | 'createdAt' | 'updatedAt' | 'birthRecords'>,
     id?: string
   ) => {
     if (id) {
@@ -77,6 +81,62 @@ const Animals = () => {
           : task
       )
     );
+  };
+
+  const handleViewFamilyTree = (animal: Animal) => {
+    setViewingAnimal(null);
+    setFamilyTreeAnimal(animal);
+  };
+
+  const handleViewBirthRecords = (animal: Animal) => {
+    setViewingAnimal(null);
+    setBirthRecordsAnimal(animal);
+  };
+
+  const handleAddBirthRecord = (animalId: string, record: Omit<BirthRecord, 'id'>) => {
+    const newRecord: BirthRecord = {
+      ...record,
+      id: crypto.randomUUID(),
+    };
+    
+    setAnimals((prev) =>
+      prev.map((animal) =>
+        animal.id === animalId
+          ? {
+              ...animal,
+              birthRecords: [...(animal.birthRecords || []), newRecord],
+              updatedAt: new Date().toISOString(),
+            }
+          : animal
+      )
+    );
+
+    // Also update the calf's mother reference
+    setAnimals((prev) =>
+      prev.map((animal) =>
+        animal.id === record.calfId
+          ? { ...animal, motherId: animalId, updatedAt: new Date().toISOString() }
+          : animal
+      )
+    );
+  };
+
+  const handleDeleteBirthRecord = (animalId: string, recordId: string) => {
+    setAnimals((prev) =>
+      prev.map((animal) =>
+        animal.id === animalId
+          ? {
+              ...animal,
+              birthRecords: (animal.birthRecords || []).filter((r) => r.id !== recordId),
+              updatedAt: new Date().toISOString(),
+            }
+          : animal
+      )
+    );
+  };
+
+  const handleFamilyTreeSelectAnimal = (animal: Animal) => {
+    setFamilyTreeAnimal(animal);
   };
 
   const getTaskCount = (animalId: string) => tasks.filter((t) => t.animalId === animalId).length;
@@ -147,6 +207,7 @@ const Animals = () => {
       <AnimalModal
         isOpen={isModalOpen}
         animal={editingAnimal}
+        animals={animals}
         onClose={closeModal}
         onSave={saveAnimal}
       />
@@ -154,12 +215,32 @@ const Animals = () => {
       <AnimalDetailModal
         isOpen={!!viewingAnimal}
         animal={viewingAnimal}
+        animals={animals}
         tasks={tasks}
         notes={notes}
         onClose={() => setViewingAnimal(null)}
         onAddTask={handleAddTask}
         onAddNote={handleAddNote}
         onToggleTask={handleToggleTask}
+        onViewFamilyTree={handleViewFamilyTree}
+        onViewBirthRecords={handleViewBirthRecords}
+      />
+
+      <FamilyTreeModal
+        isOpen={!!familyTreeAnimal}
+        animal={familyTreeAnimal}
+        animals={animals}
+        onClose={() => setFamilyTreeAnimal(null)}
+        onSelectAnimal={handleFamilyTreeSelectAnimal}
+      />
+
+      <BirthRecordsModal
+        isOpen={!!birthRecordsAnimal}
+        animal={birthRecordsAnimal}
+        animals={animals}
+        onClose={() => setBirthRecordsAnimal(null)}
+        onAddRecord={handleAddBirthRecord}
+        onDeleteRecord={handleDeleteBirthRecord}
       />
     </MobileLayout>
   );
