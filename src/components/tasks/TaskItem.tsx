@@ -3,6 +3,7 @@ import { Check, Trash2 } from 'lucide-react';
 import { CattleTask, TASK_CATEGORIES, Animal } from '@/types/cattle';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { TaskChatButton } from './TaskChatButton';
 
 interface TaskItemProps {
   task: CattleTask;
@@ -54,6 +55,13 @@ export function TaskItem({ task, animal, onToggle, onDelete }: TaskItemProps) {
           {task.title}
         </p>
       </div>
+
+      {/* Chat Button */}
+      <TaskChatButton 
+        taskId={task.id} 
+        taskTitle={task.title} 
+        animalName={animal?.name}
+      />
 
       {/* Delete Button */}
       <Button
