@@ -14,7 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          room_id: string
+          sender_name: string
+          sender_role: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          room_id: string
+          sender_name: string
+          sender_role?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          room_id?: string
+          sender_name?: string
+          sender_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_rooms: {
+        Row: {
+          animal_name: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          share_code: string
+          task_id: string
+          task_title: string
+        }
+        Insert: {
+          animal_name?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          share_code?: string
+          task_id: string
+          task_title: string
+        }
+        Update: {
+          animal_name?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          share_code?: string
+          task_id?: string
+          task_title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
