@@ -69,6 +69,8 @@ export function AnimalModal({ isOpen, animal, animals, onClose, onSave }: Animal
           tagId: tagId.trim().slice(0, 50) || undefined,
           age: Math.max(0, Math.min(30, parseInt(age) || 0)),
           sex,
+          status: animal?.status || 'alive',
+          statusNote: animal?.statusNote,
           breed: breed.trim().slice(0, 100) || undefined,
           birthWeight: birthWeight ? parseFloat(birthWeight) : undefined,
           currentWeight: currentWeight ? parseFloat(currentWeight) : undefined,

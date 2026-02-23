@@ -1,6 +1,6 @@
 import React from 'react';
-import { X, CheckSquare, FileText, Plus, GitBranch, Baby, Scale, Calendar } from 'lucide-react';
-import { Animal, CattleTask, CattleNote, TASK_CATEGORIES } from '@/types/cattle';
+import { X, CheckSquare, FileText, Plus, GitBranch, Baby, Scale, Calendar, ShieldAlert } from 'lucide-react';
+import { Animal, CattleTask, CattleNote, TASK_CATEGORIES, ANIMAL_STATUSES, isAnimalActive } from '@/types/cattle';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,7 @@ interface AnimalDetailModalProps {
   onToggleTask: (taskId: string) => void;
   onViewFamilyTree: (animal: Animal) => void;
   onViewBirthRecords: (animal: Animal) => void;
+  onChangeStatus: (animal: Animal) => void;
 }
 
 export function AnimalDetailModal({
@@ -31,6 +32,7 @@ export function AnimalDetailModal({
   onToggleTask,
   onViewFamilyTree,
   onViewBirthRecords,
+  onChangeStatus,
 }: AnimalDetailModalProps) {
   if (!isOpen || !animal) return null;
 
@@ -39,6 +41,10 @@ export function AnimalDetailModal({
   
   const mother = animals.find(a => a.id === animal.motherId);
   const father = animals.find(a => a.id === animal.fatherId);
+
+  const status = animal.status || 'alive';
+  const statusInfo = ANIMAL_STATUSES[status];
+  const active = isAnimalActive(animal);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 animate-fade-in">
@@ -49,7 +55,12 @@ export function AnimalDetailModal({
             <span className="text-3xl">{animal.sex === 'male' ? '🐂' : '🐄'}</span>
             <div>
               <h2 className="text-xl font-bold">{animal.name}</h2>
-              {animal.tagId && <p className="text-sm opacity-80">Tag: {animal.tagId}</p>}
+              <div className="flex items-center gap-2">
+                {animal.tagId && <p className="text-sm opacity-80">Tag: {animal.tagId}</p>}
+                <span className="text-xs bg-primary-foreground/20 px-2 py-0.5 rounded-full">
+                  {statusInfo.icon} {statusInfo.label}
+                </span>
+              </div>
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="text-primary-foreground hover:bg-primary-foreground/20">
@@ -58,6 +69,19 @@ export function AnimalDetailModal({
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Status banner for non-alive */}
+          {!active && (
+            <div className={cn('rounded-xl p-3 flex items-center gap-2', statusInfo.color)}>
+              <ShieldAlert className="w-5 h-5" />
+              <div>
+                <p className="text-sm font-semibold">This animal is {statusInfo.label.toLowerCase()}</p>
+                {animal.statusNote?.[status] && (
+                  <p className="text-xs mt-1 opacity-80">{animal.statusNote[status]}</p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Basic Info */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-muted rounded-xl p-3 text-center">
@@ -135,6 +159,14 @@ export function AnimalDetailModal({
             <Button 
               variant="outline" 
               className="h-12"
+              onClick={() => onChangeStatus(animal)}
+            >
+              <ShieldAlert className="w-4 h-4 mr-2" />
+              Change Status
+            </Button>
+            <Button 
+              variant="outline" 
+              className="h-12"
               onClick={() => onViewFamilyTree(animal)}
             >
               <GitBranch className="w-4 h-4 mr-2" />
@@ -168,9 +200,11 @@ export function AnimalDetailModal({
               <h3 className="font-bold text-foreground flex items-center gap-2">
                 <CheckSquare className="w-5 h-5" /> Tasks ({animalTasks.length})
               </h3>
-              <Button variant="ghost" size="sm" onClick={() => onAddTask(animal.id)}>
-                <Plus className="w-4 h-4 mr-1" /> Add
-              </Button>
+              {active && (
+                <Button variant="ghost" size="sm" onClick={() => onAddTask(animal.id)}>
+                  <Plus className="w-4 h-4 mr-1" /> Add
+                </Button>
+              )}
             </div>
             {animalTasks.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">No tasks linked</p>

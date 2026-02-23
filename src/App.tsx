@@ -8,6 +8,7 @@ import Animals from "./pages/Animals";
 import Tasks from "./pages/Tasks";
 import Notes from "./pages/Notes";
 import Chat from "./pages/Chat";
+import Treatments from "./pages/Treatments";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/animals" element={<Animals />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/notes" element={<Notes />} />
+          <Route path="/treatments" element={<Treatments />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

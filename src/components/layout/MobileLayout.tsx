@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, CheckSquare, FileText, Users } from 'lucide-react';
+import { Home, CheckSquare, FileText, Users, Syringe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface MobileLayoutProps {
@@ -12,6 +12,7 @@ const navItems = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/animals', icon: Users, label: 'Herd' },
   { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
+  { path: '/treatments', icon: Syringe, label: 'Treat' },
   { path: '/notes', icon: FileText, label: 'Notes' },
 ];
 

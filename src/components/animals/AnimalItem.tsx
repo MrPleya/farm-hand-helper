@@ -1,7 +1,8 @@
 import React from 'react';
-import { Trash2, Edit, FileText, CheckSquare } from 'lucide-react';
-import { Animal } from '@/types/cattle';
+import { Trash2, Edit, FileText, CheckSquare, ShieldAlert } from 'lucide-react';
+import { Animal, ANIMAL_STATUSES, isAnimalActive } from '@/types/cattle';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface AnimalItemProps {
   animal: Animal;
@@ -13,9 +14,16 @@ interface AnimalItemProps {
 }
 
 export function AnimalItem({ animal, taskCount, noteCount, onEdit, onDelete, onViewDetails }: AnimalItemProps) {
+  const status = animal.status || 'alive';
+  const statusInfo = ANIMAL_STATUSES[status];
+  const active = isAnimalActive(animal);
+
   return (
     <div 
-      className="p-4 bg-card rounded-xl border border-border shadow-sm animate-fade-in cursor-pointer hover:border-primary/50 transition-all"
+      className={cn(
+        "p-4 bg-card rounded-xl border shadow-sm animate-fade-in cursor-pointer transition-all",
+        active ? "border-border hover:border-primary/50" : "border-border opacity-70"
+      )}
       onClick={() => onViewDetails(animal)}
     >
       <div className="flex items-start justify-between gap-3">
@@ -24,7 +32,14 @@ export function AnimalItem({ animal, taskCount, noteCount, onEdit, onDelete, onV
             <span className="text-2xl">{animal.sex === 'male' ? '🐂' : '🐄'}</span>
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-foreground truncate">{animal.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-foreground truncate">{animal.name}</h3>
+              {status !== 'alive' && (
+                <span className={cn('text-xs px-1.5 py-0.5 rounded-full font-semibold', statusInfo.color)}>
+                  {statusInfo.icon} {statusInfo.label}
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2 flex-wrap">
               {animal.tagId && (
                 <span className="text-xs text-muted-foreground">#{animal.tagId}</span>
